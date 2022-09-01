@@ -1,6 +1,28 @@
+const dotenv = require('dotenv').config()
+const {CONNECTION_STRING} = process.env
+const Connection = require('pg/lib/connection')
+const Sequelize = require('sequelize')
 
+const sequelize = new Sequelize(CONNECTION_STRING, {
+    dialect: 'postgres',
+    dialectOptions: {
+        ssl: {
+            rejectUnauthorized: false
+        }
+    }
+})
 
 module.exports = {
+    getCountries: (req, res) => {
+        sequelize.query(`
+        SELECT * FROM countries;
+        `)
+        .then((response) => {
+            const returnData = response[0]
+            res.status(200).send(returnData)
+
+        })
+    },
     seed: (req, res) => {
         sequelize.query(`
             drop table if exists cities;
@@ -11,7 +33,12 @@ module.exports = {
                 name varchar
             );
 
-            *****YOUR CODE HERE*****
+            CREATE TABLE cities(
+                city_id SERIAL PRIMARY KEY,
+                name VARCHAR,
+                rating INTEGER,
+                country_id INTEGER REFERENCES countries(country_id)
+            );
 
             insert into countries (name)
             values ('Afghanistan'),
